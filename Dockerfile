@@ -5,7 +5,7 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 FROM base as downloader
-CMD ["python3", "main.py"]
+CMD ["python3", "-u", "main.py"]
 
 FROM base as service
 EXPOSE 5001
