@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
       target: downloader
     volumes:
-      - pwned_data:/app/hashes
+      - ./hashes:/app/hashes
     command: ["python3", "main.py"]
     restart: "no"
 
@@ -15,12 +15,9 @@ services:
       dockerfile: Dockerfile
       target: service
     volumes:
-      - pwned_data:/app/hashes
+      - ./hashes:/app/hashes
     ports:
       - "5001:5001"
     depends_on:
       - downloader
     restart: unless-stopped
-
-volumes:
-  pwned_data:
