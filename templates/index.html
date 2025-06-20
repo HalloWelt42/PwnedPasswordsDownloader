@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Leak Check</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      text-align: center;
+      background-color: #1e1e1e;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      width: 90%;
+      max-width: 400px;
+      margin-bottom: 2rem;
+    }
+    input[type="password"] {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 1rem;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #03dac6;
+      color: #000;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .result {
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+    .footer {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #bbb;
+    }
+    .footer a {
+      color: #bbb;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .footer svg {
+      width: 16px;
+      height: 16px;
+      fill: #bbb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔐 Passwort-Leak Check</h2>
+    <input type="password" id="pw" placeholder="Passwort eingeben" />
+    <button onclick="checkPassword()">Prüfen</button>
+    <div class="result" id="result"></div>
+    <div style="margin-top: 1rem;">
+      <a href="/apidocs" style="font-size: 0.85rem; color: #aaa;">📘 API-Dokumentation ansehen (Swagger)</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://github.com/HalloWelt42/PwnedPasswordsDownloader" target="_blank">
+      <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+        0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01
+        1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+        0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0
+        1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87
+        3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013
+        0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      GitHub-Projekt
+    </a>
+  </div>
+
+  <script>
+    async function checkPassword() {
+      const pw = document.getElementById("pw").value;
+      const result = document.getElementById("result");
+      result.textContent = "Prüfe ...";
+
+      try {
+        const res = await fetch("/check", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ password: pw })
+        });
+
+        if (!res.ok) throw new Error("Fehler bei der API-Anfrage.");
+        const data = await res.json();
+
+        if (data.found) {
+          result.textContent = `🚨 Passwort gefunden! Verwendet: ${data.count}x`;
+          result.style.color = "#ff5252";
+        } else {
+          result.textContent = "✅ Passwort wurde nicht gefunden.";
+          result.style.color = "#03dac6";
+        }
+      } catch (err) {
+        result.textContent = `❌ Fehler: ${err.message}`;
+        result.style.color = "#fbc02d";
+      }
+    }
+  </script>
+</body>
+</html>
