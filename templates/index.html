@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Password Leak Check</title>
+  <title>Passwort-Leak-Prüfung</title>
   <style>
     body {
       background-color: #121212;
@@ -26,6 +26,12 @@
       max-width: 400px;
       margin-bottom: 2rem;
     }
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
     input[type="password"] {
       width: 100%;
       padding: 0.8rem;
@@ -43,6 +49,10 @@
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
+    }
+    button:focus {
+      outline: 3px solid #ffffff;
+      outline-offset: 2px;
     }
     .result {
       margin-top: 1rem;
@@ -68,19 +78,23 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>🔐 Passwort-Leak Check</h2>
-    <input type="password" id="pw" placeholder="Passwort eingeben" />
-    <button onclick="checkPassword()">Prüfen</button>
-    <div class="result" id="result"></div>
+  <main class="container" role="main" aria-labelledby="main-title">
+    <h1 id="main-title">🔐 Passwort-Leak Check</h1>
+    <form id="pw-form" aria-describedby="form-desc">
+      <p id="form-desc">Geben Sie ein Passwort ein, um es lokal auf bekannte Leaks zu prüfen.</p>
+      <label for="pw">Passwort:</label>
+      <input type="password" id="pw" name="pw" aria-required="true" aria-label="Passwortfeld" />
+      <button type="submit">Prüfen</button>
+    </form>
+    <div class="result" id="result" aria-live="polite"></div>
     <div style="margin-top: 1rem;">
       <a href="/apidocs" style="font-size: 0.85rem; color: #aaa;">📘 API-Dokumentation ansehen (Swagger)</a>
     </div>
-  </div>
+  </main>
 
-  <div class="footer">
-    <a href="https://github.com/HalloWelt42/PwnedPasswordsDownloader" target="_blank">
-      <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <footer class="footer">
+    <a href="https://github.com/HalloWelt42/PwnedPasswordsDownloader" target="_blank" aria-label="Zum GitHub-Projekt">
+      <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
         <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
         0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01
         1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
@@ -91,38 +105,45 @@
       </svg>
       GitHub-Projekt
     </a>
-  </div>
+  </footer>
 
   <script>
-    async function checkPassword() {
-      const pw = document.getElementById("pw").value;
-      const result = document.getElementById("result");
-      result.textContent = "Prüfe ...";
+    document.addEventListener("DOMContentLoaded", function () {
+      const input = document.getElementById("pw");
+      input.focus();
 
-      try {
-        const res = await fetch("/check", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ password: pw })
-        });
+      const form = document.getElementById("pw-form");
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const pw = input.value;
+        const result = document.getElementById("result");
+        result.textContent = "Prüfe ...";
 
-        if (!res.ok) throw new Error("Fehler bei der API-Anfrage.");
-        const data = await res.json();
+        try {
+          const res = await fetch("/check", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ password: pw })
+          });
 
-        if (data.found) {
-          result.textContent = `🚨 Passwort gefunden! Verwendet: ${data.count}x`;
-          result.style.color = "#ff5252";
-        } else {
-          result.textContent = "✅ Passwort wurde nicht gefunden.";
-          result.style.color = "#03dac6";
+          if (!res.ok) throw new Error("Fehler bei der API-Anfrage.");
+          const data = await res.json();
+
+          if (data.found) {
+            result.textContent = `🚨 Passwort gefunden! Verwendet: ${data.count}x`;
+            result.style.color = "#ff5252";
+          } else {
+            result.textContent = "✅ Passwort wurde nicht gefunden.";
+            result.style.color = "#03dac6";
+          }
+        } catch (err) {
+          result.textContent = `❌ Fehler: ${err.message}`;
+          result.style.color = "#fbc02d";
         }
-      } catch (err) {
-        result.textContent = `❌ Fehler: ${err.message}`;
-        result.style.color = "#fbc02d";
-      }
-    }
+      });
+    });
   </script>
 </body>
 </html>
